@@ -23,13 +23,25 @@ def get_score():
         homeScoreList.append(game.get('competitions')[0].get('competitors')[0].get('score'))
         awayScoreList.append(game.get('competitions')[0].get('competitors')[1].get('score'))
 
+    #merge arrays into a dictionary and save to json
+    gameData = []
+    for i in range(len(nameList)):
+        gameData.append({
+            "gameID": i+1,
+            # "homeTeam": nameList[i].split("@")[1], #these cause issues when the team name doesn't have @ and is VS instead
+            # "awayTeam": nameList[i].split("@")[0],
+            "fullName": nameList[i],
+            "homeScore": homeScoreList[i],
+            "awayScore": awayScoreList[i]
+        })
+        #dumps all the current scores to json file
+        with open(f"game_scores.json", "w") as f:
+            json.dump(gameData, f, indent=2)        
+
     # for i in range(len(nameList)):
     #     print(f"{nameList[i]}: {awayScoreList[i]} - {homeScoreList[i]}")
     # print(nameList)
-
-    print(f"saved. status: {response.status_code}, {len(data.get('events', []))} games")
-    scoreList = dict(homeScoreList=homeScoreList, awayScoreList=awayScoreList, nameList=nameList)
-    return scoreList
+    return gameData
 
 #returns your favorite team's data in a list: [team abbreviation name, win-loss record]
 #when calling this function, use the team name in lowercase (ex: "seattle" for seahawks)
@@ -41,16 +53,21 @@ def get_favTeam_data(teamName):
     response.raise_for_status
     data = response.json()
 
-    with open(f"{teamName}_data.json", "w") as f:
-        json.dump(data, f, indent=2)
+    #dumps the whole content of api to json
+    # with open(f"{teamName}_data.json", "w") as f:
+    #     json.dump(data, f, indent=2)
 
     teamData = []
     teamData.append(data.get('team').get('shortDisplayName'))
     teamData.append(data.get('team').get('record').get('items')[0].get('summary'))
 
+    #dump the team data to json
+    with open(f"{teamName}_data.json", "w") as f:
+        json.dump(teamData, f, indent=2)
+
     return teamData
 
-# def main():
-#     print(get_score())
+def main():
+    print(get_score())
 
-# main()
+main()
