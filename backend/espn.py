@@ -56,7 +56,7 @@ def get_score():
             }
         })
         #dumps all the current scores to json file
-        with open(f"game_scores.json", "w") as f:
+        with open(f"game_data.json", "w") as f:
             json.dump(gameData, f, indent=2)        
 
     # for i in range(len(nameList)):
