@@ -45,7 +45,7 @@ def get_favTeam_data(teamName):
         json.dump(data, f, indent=2)
 
     teamData = []
-    teamData.append(data.get('team').get('abbreviation'))
+    teamData.append(data.get('team').get('shortDisplayName'))
     teamData.append(data.get('team').get('record').get('items')[0].get('summary'))
 
     return teamData
