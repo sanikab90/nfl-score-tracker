@@ -3,3 +3,14 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+# secrets and generated or trademarked files
+include/config.h
+include/logos.h
+assets/
+
+# python backend
+backend/venv/
+__pycache__/
+backend/config.json
+backend/.env
