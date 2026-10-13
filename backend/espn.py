@@ -18,10 +18,19 @@ def get_score():
     homeScoreList = []
     awayScoreList = []
     nameList = []
+    gameStatusList = []
+    teamNames = [[], []]
+    teamAbbreviations = [[], []]
     for game in data.get('events'):
         nameList.append(game.get('shortName'))
         homeScoreList.append(game.get('competitions')[0].get('competitors')[0].get('score'))
         awayScoreList.append(game.get('competitions')[0].get('competitors')[1].get('score'))
+        gameStatusList.append(game.get('status').get('type').get('description'))
+        teamNames[0].append(game.get('competitions')[0].get('competitors')[0].get('team').get('name'))
+        teamNames[1].append(game.get('competitions')[0].get('competitors')[1].get('team').get('name'))
+        teamAbbreviations[0].append(game.get('competitions')[0].get('competitors')[0].get('team').get('abbreviation'))
+        teamAbbreviations[1].append(game.get('competitions')[0].get('competitors')[1].get('team').get('abbreviation'))
+
 
     #merge arrays into a dictionary and save to json
     gameData = []
@@ -32,7 +41,16 @@ def get_score():
             # "awayTeam": nameList[i].split("@")[0],
             "fullName": nameList[i],
             "homeScore": homeScoreList[i],
-            "awayScore": awayScoreList[i]
+            "awayScore": awayScoreList[i],
+            "gameStatus": gameStatusList[i],
+            "teamNames": {
+                "homeTeam": teamNames[0][i],
+                "awayTeam": teamNames[1][i]
+            },
+            "teamAbbreviations": {
+                "homeTeam": teamAbbreviations[0][i],
+                "awayTeam": teamAbbreviations[1][i]
+            }
         })
         #dumps all the current scores to json file
         with open(f"game_scores.json", "w") as f:
@@ -68,7 +86,7 @@ def get_favTeam_data(teamName):
 
 def main():
     get_score()
-    get_favTeam_data("seattle")
-    get_favTeam_data("chicago")
+    # get_favTeam_data("seattle")
+    # get_favTeam_data("chicago")
 
 main()
