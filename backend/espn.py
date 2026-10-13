@@ -58,8 +58,7 @@ def get_favTeam_data(teamName):
     #     json.dump(data, f, indent=2)
 
     teamData = []
-    teamData.append(data.get('team').get('shortDisplayName'))
-    teamData.append(data.get('team').get('record').get('items')[0].get('summary'))
+    teamData.append({"teamName": data.get('team').get('shortDisplayName'), "teamRecord": data.get('team').get('record').get('items')[0].get('summary')})
 
     #dump the team data to json
     with open(f"{teamName}_data.json", "w") as f:
@@ -68,6 +67,8 @@ def get_favTeam_data(teamName):
     return teamData
 
 def main():
-    print(get_score())
+    get_score()
+    get_favTeam_data("seattle")
+    get_favTeam_data("chicago")
 
 main()
