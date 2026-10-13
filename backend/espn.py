@@ -21,6 +21,9 @@ def get_score():
     gameStatusList = []
     teamNames = [[], []]
     teamAbbreviations = [[], []]
+
+    #TODO: check during live games how it updates the scores and the timeclock and all that and what other info is available in the api that we can use to display on the screen
+
     for game in data.get('events'):
         nameList.append(game.get('shortName'))
         homeScoreList.append(game.get('competitions')[0].get('competitors')[0].get('score'))
