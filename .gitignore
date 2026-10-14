@@ -14,3 +14,7 @@ backend/venv/
 __pycache__/
 backend/config.json
 backend/.env
+
+# created json files
+backend/*_data.json
+backend/game_scores.json
