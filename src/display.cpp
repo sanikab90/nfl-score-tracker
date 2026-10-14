@@ -27,7 +27,8 @@ void setup() {
   TFT_display.setRotation(1); // Landscape
   TFT_display.fillScreen(WHITE);
 
-  TFT_display.drawRGBBitmap(0, 0, kc, KC_WIDTH, KC_HEIGHT);
+//   TFT_display.drawRGBBitmap(0, 0, kc, KC_WIDTH, KC_HEIGHT);
+  TFT_display.drawRGBBitmap(0, 0, az, AZ_WIDTH, AZ_HEIGHT);
 
 }
 

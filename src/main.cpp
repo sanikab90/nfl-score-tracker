@@ -1,140 +1,146 @@
-/*
- * This ESP32 code is created by esp32io.com
- *
- * This ESP32 code is released in the public domain
- *
- * For more detail (instruction and wiring diagram), visit https://esp32io.com/tutorials/esp32-tft-lcd-touch-display-spi
- */
+// /*
+//  * This ESP32 code is created by esp32io.com
+//  *
+//  * This ESP32 code is released in the public domain
+//  *
+//  * For more detail (instruction and wiring diagram), visit https://esp32io.com/tutorials/esp32-tft-lcd-touch-display-spi
+//  */
 
-/*
-   Created by DIYables
+// /*
+//    Created by DIYables
 
-   This example code is in the public domain
+//    This example code is in the public domain
 
-   Product page: https://diyables.io
-*/
+//    Product page: https://diyables.io
+// */
 
-// =============================================
-// Single include brings in the base class plus all driver classes.
-// =============================================
-#include <Arduino.h>
-#include <DIYables_TFT_SPI.h>
+// // =============================================
+// // Single include brings in the base class plus all driver classes.
+// // =============================================
+// #include <Arduino.h>
+// #include <DIYables_TFT_SPI.h>
+// #include "../include/logos.h"
 
-// =============================================
-// Wiring (ESP32)
-// =============================================
-// TFT pins (always required)
-//   TFT module     ESP32
-//   ------------   ---------------------------------
-//   VCC        ->  3.3V (NOT 5V!)
-//   GND        ->  GND
-//   CS         ->  GPIO5  (TFT_CS_PIN)
-//   RESET      ->  GPIO4  (TFT_RST_PIN)
-//   DC / RS    ->  GPIO2  (TFT_DC_PIN)
-//   SDI / MOSI ->  GPIO23 (hardware SPI MOSI / VSPI)
-//   SCK        ->  GPIO18 (hardware SPI SCK / VSPI)
-//   SDO / MISO ->  GPIO19 (only needed when reading from display / VSPI)
-//   LED        ->  GPIO21 (TFT_BL_PIN)
-// =============================================
+// // =============================================
+// // Wiring (ESP32)
+// // =============================================
+// // TFT pins (always required)
+// //   TFT module     ESP32
+// //   ------------   ---------------------------------
+// //   VCC        ->  3.3V (NOT 5V!)
+// //   GND        ->  GND
+// //   CS         ->  GPIO5  (TFT_CS_PIN)
+// //   RESET      ->  GPIO4  (TFT_RST_PIN)
+// //   DC / RS    ->  GPIO2  (TFT_DC_PIN)
+// //   SDI / MOSI ->  GPIO23 (hardware SPI MOSI / VSPI)
+// //   SCK        ->  GPIO18 (hardware SPI SCK / VSPI)
+// //   SDO / MISO ->  GPIO19 (only needed when reading from display / VSPI)
+// //   LED        ->  GPIO21 (TFT_BL_PIN)
+// // =============================================
 
-// =============================================
-// SPI pin definitions (adjust for your board)
-// =============================================
-#define TFT_CS_PIN   5
-#define TFT_DC_PIN   22
-#define TFT_RST_PIN  4
-#define TFT_BL_PIN   21  // Added GPIO pin 21 for Backlight Control
+// // =============================================
+// // SPI pin definitions (adjust for your board)
+// // =============================================
+// #define TFT_CS_PIN   5
+// #define TFT_DC_PIN   22
+// #define TFT_RST_PIN  4
+// #define TFT_BL_PIN   21  // Added GPIO pin 21 for Backlight Control
 
-// Panel resolution in native (portrait) orientation - change to match your module
-#define TFT_WIDTH   240
-#define TFT_HEIGHT  320
-// MOSI and SCK use default hardware SPI pins
+// // Panel resolution in native (portrait) orientation - change to match your module
+// #define TFT_WIDTH   240
+// #define TFT_HEIGHT  320
+// // MOSI and SCK use default hardware SPI pins
 
-// =============================================
-// Create display object (uncomment matching driver)
-// =============================================
-// DIYables_ILI9341_SPI TFT_display(TFT_WIDTH, TFT_HEIGHT, TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
-// DIYables_ILI9488_SPI TFT_display(TFT_WIDTH, TFT_HEIGHT, TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
-DIYables_ST7789_SPI  TFT_display(TFT_WIDTH, TFT_HEIGHT, TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
+// // =============================================
+// // Create display object (uncomment matching driver)
+// // =============================================
+// // DIYables_ILI9341_SPI TFT_display(TFT_WIDTH, TFT_HEIGHT, TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
+// // DIYables_ILI9488_SPI TFT_display(TFT_WIDTH, TFT_HEIGHT, TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
+// DIYables_ST7789_SPI  TFT_display(TFT_WIDTH, TFT_HEIGHT, TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
 
-#define BLACK     DIYables_TFT_SPI::colorRGB(0, 0, 0)
-#define BLUE      DIYables_TFT_SPI::colorRGB(0, 0, 255)
-#define RED       DIYables_TFT_SPI::colorRGB(255, 0, 0)
-#define GREEN     DIYables_TFT_SPI::colorRGB(0, 255, 0)
-#define ORANGE    DIYables_TFT_SPI::colorRGB(255, 165, 0)
-#define PINK      DIYables_TFT_SPI::colorRGB(255, 192, 203)
-#define VIOLET    DIYables_TFT_SPI::colorRGB(148, 0, 211)
-#define TURQUOISE DIYables_TFT_SPI::colorRGB(64, 224, 208)
-#define WHITE     DIYables_TFT_SPI::colorRGB(255, 255, 255)
+// // #define BLACK     DIYables_TFT_SPI::colorRGB(0, 0, 0)
+// // #define BLUE      DIYables_TFT_SPI::colorRGB(0, 0, 255)
+// #define RED       DIYables_TFT_SPI::colorRGB(255, 0, 0)
+// // #define GREEN     DIYables_TFT_SPI::colorRGB(0, 255, 0)
+// // #define ORANGE    DIYables_TFT_SPI::colorRGB(255, 165, 0)
+// // #define PINK      DIYables_TFT_SPI::colorRGB(255, 192, 203)
+// // #define VIOLET    DIYables_TFT_SPI::colorRGB(148, 0, 211)
+// // #define TURQUOISE DIYables_TFT_SPI::colorRGB(64, 224, 208)
+// #define WHITE     DIYables_TFT_SPI::colorRGB(255, 255, 255)
 
-// Helper to draw a filled diamond
-void fillDiamond(int cx, int cy, int h, int v, uint16_t color) {
-  int x0 = cx, y0 = cy - v;
-  int x1 = cx + h, y1 = cy;
-  int x2 = cx, y2 = cy + v;
-  int x3 = cx - h, y3 = cy;
-  TFT_display.fillTriangle(x0, y0, x1, y1, x2, y2, color);
-  TFT_display.fillTriangle(x0, y0, x2, y2, x3, y3, color);
-}
+// // // Helper to draw a filled diamond
+// // void fillDiamond(int cx, int cy, int h, int v, uint16_t color) {
+// //   int x0 = cx, y0 = cy - v;
+// //   int x1 = cx + h, y1 = cy;
+// //   int x2 = cx, y2 = cy + v;
+// //   int x3 = cx - h, y3 = cy;
+// //   TFT_display.fillTriangle(x0, y0, x1, y1, x2, y2, color);
+// //   TFT_display.fillTriangle(x0, y0, x2, y2, x3, y3, color);
+// // }
 
-void setup() {
-  // Initialize Backlight Hardware Pin
-  pinMode(TFT_BL_PIN, OUTPUT);
-  digitalWrite(TFT_BL_PIN, HIGH); // Turn backlight ON
+// void setup() {
+//   // Initialize Backlight Hardware Pin
+//   pinMode(TFT_BL_PIN, OUTPUT);
+//   digitalWrite(TFT_BL_PIN, HIGH); // Turn backlight ON
 
-  TFT_display.begin();
-  TFT_display.setRotation(1); // Landscape
-}
+//   TFT_display.begin();
+//   TFT_display.setRotation(1); // Landscape
+//   TFT_display.fillScreen(WHITE);
 
-void loop() {
-  TFT_display.fillScreen(WHITE);
+//   TFT_display.drawRGBBitmap(0, 0, bears, BEARS_WIDTH, BEARS_HEIGHT);
+//   // TFT_display.drawRGBBitmap(0, 0, kc, KC_WIDTH, KC_HEIGHT);
 
-  uint16_t w = TFT_display.width();
-  uint16_t h = TFT_display.height();
+// }
 
-  // Scale positions relative to screen size with better spacing
-  int col1 = w / 8;
-  int col2 = w * 3 / 8;
-  int col3 = w * 5 / 8;
-  int col4 = w * 7 / 8;
-  int row1 = h / 4;
-  int row2 = h / 2;
-  int row3 = h * 3 / 4;
+// void loop() {
+//   // TFT_display.fillScreen(WHITE);
 
-  // Outlined circle
-  TFT_display.drawCircle(col1, row1, 30, RED);
+//   // uint16_t w = TFT_display.width();
+//   // uint16_t h = TFT_display.height();
 
-  // Filled circle
-  TFT_display.fillCircle(col2, row1, 30, RED);
+// //   // Scale positions relative to screen size with better spacing
+// //   int col1 = w / 8;
+// //   int col2 = w * 3 / 8;
+// //   int col3 = w * 5 / 8;
+// //   int col4 = w * 7 / 8;
+// //   int row1 = h / 4;
+// //   int row2 = h / 2;
+// //   int row3 = h * 3 / 4;
 
-  // Outlined triangle
-  TFT_display.drawTriangle(col3 - 30, row1 + 25, col3 + 30, row1 + 25, col3, row1 - 25, BLUE);
+// //   // Outlined circle
+// //   TFT_display.drawCircle(col1, row1, 30, RED);
 
-  // Filled triangle
-  TFT_display.fillTriangle(col4 - 30, row1 + 25, col4 + 30, row1 + 25, col4, row1 - 25, GREEN);
+// //   // Filled circle
+// //   TFT_display.fillCircle(col2, row1, 30, RED);
 
-  // Outlined rectangle
-  TFT_display.drawRect(col1 - 35, row2 - 20, 70, 40, ORANGE);
+// //   // Outlined triangle
+// //   TFT_display.drawTriangle(col3 - 30, row1 + 25, col3 + 30, row1 + 25, col3, row1 - 25, BLUE);
 
-  // Filled rectangle
-  TFT_display.fillRect(col2 - 35, row2 - 20, 70, 40, TURQUOISE);
+// //   // Filled triangle
+// //   TFT_display.fillTriangle(col4 - 30, row1 + 25, col4 + 30, row1 + 25, col4, row1 - 25, GREEN);
 
-  // Outlined round rectangle
-  TFT_display.drawRoundRect(col3 - 35, row2 - 20, 70, 40, 10, VIOLET);
+// //   // Outlined rectangle
+// //   TFT_display.drawRect(col1 - 35, row2 - 20, 70, 40, ORANGE);
 
-  // Filled round rectangle
-  TFT_display.fillRoundRect(col4 - 35, row2 - 20, 70, 40, 10, PINK);
+// //   // Filled rectangle
+// //   TFT_display.fillRect(col2 - 35, row2 - 20, 70, 40, TURQUOISE);
 
-  // Outlined diamond (centered between col1 and col2)
-  int diamond1_x = (col1 + col2) / 2;
-  TFT_display.drawLine(diamond1_x, row3 - 30, diamond1_x + 25, row3, GREEN);
-  TFT_display.drawLine(diamond1_x + 25, row3, diamond1_x, row3 + 30, GREEN);
-  TFT_display.drawLine(diamond1_x, row3 + 30, diamond1_x - 25, row3, GREEN);
-  TFT_display.drawLine(diamond1_x - 25, row3, diamond1_x, row3 - 30, GREEN);
+// //   // Outlined round rectangle
+// //   TFT_display.drawRoundRect(col3 - 35, row2 - 20, 70, 40, 10, VIOLET);
 
-  // Filled diamond (centered between col3 and col4)
-  int diamond2_x = (col3 + col4) / 2;
-  fillDiamond(diamond2_x, row3, 25, 30, BLUE);
+// //   // Filled round rectangle
+// //   TFT_display.fillRoundRect(col4 - 35, row2 - 20, 70, 40, 10, PINK);
 
-  delay(10000);
-}
+// //   // Outlined diamond (centered between col1 and col2)
+// //   int diamond1_x = (col1 + col2) / 2;
+// //   TFT_display.drawLine(diamond1_x, row3 - 30, diamond1_x + 25, row3, GREEN);
+// //   TFT_display.drawLine(diamond1_x + 25, row3, diamond1_x, row3 + 30, GREEN);
+// //   TFT_display.drawLine(diamond1_x, row3 + 30, diamond1_x - 25, row3, GREEN);
+// //   TFT_display.drawLine(diamond1_x - 25, row3, diamond1_x, row3 - 30, GREEN);
+
+// //   // Filled diamond (centered between col3 and col4)
+// //   int diamond2_x = (col3 + col4) / 2;
+// //   fillDiamond(diamond2_x, row3, 25, 30, BLUE);
+
+// //   delay(10000);
+// }
