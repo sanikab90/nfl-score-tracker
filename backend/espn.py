@@ -1,95 +1,71 @@
-import requests, json
+import time
+import requests
+from flask import Flask, jsonify
 
-#this function gets the current scores for all games in the current week and sends it back in 3 lists: home team scores, away team scores, and the name of the game (ex: "SF@SEA")
+SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
+CACHE_SECONDS = 15
+
+app = Flask(__name__)
+_cache = {"time": 0.0, "data": None}
+
+
 def get_score():
-    # url for espn api
-    url = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
-
-    response = requests.get(url, timeout=10) #10 seconds to get response otherwise we throw 
-    response.raise_for_status
+    """Fetch the scoreboard from ESPN and return a small, ESP32-friendly dict."""
+    response = requests.get(SCOREBOARD_URL, timeout=10)
+    response.raise_for_status()
     data = response.json()
 
-    #dumps the whole content of scoreboard to json
-    # with open("raw_scoreboard.json", "w") as f:
-    #     json.dump(data, f, indent=2)
+    games = []
+    for i, game in enumerate(data.get("events", [])):
+        comp = game["competitions"][0]
+        status = game["status"]["type"]
+        home = next(c for c in comp["competitors"] if c["homeAway"] == "home")
+        away = next(c for c in comp["competitors"] if c["homeAway"] == "away")
 
-    #grabs the name of each "event" (game)
-    #grabs the score for each game
-    homeScoreList = []
-    awayScoreList = []
-    nameList = []
-    gameStatusList = []
-    teamNames = [[], []]
-    teamAbbreviations = [[], []]
-
-    #TODO: check during live games how it updates the scores and the timeclock and all that and what other info is available in the api that we can use to display on the screen
-
-    for game in data.get('events'):
-        nameList.append(game.get('shortName'))
-        homeScoreList.append(game.get('competitions')[0].get('competitors')[0].get('score'))
-        awayScoreList.append(game.get('competitions')[0].get('competitors')[1].get('score'))
-        gameStatusList.append(game.get('status').get('type').get('description'))
-        teamNames[0].append(game.get('competitions')[0].get('competitors')[0].get('team').get('name'))
-        teamNames[1].append(game.get('competitions')[0].get('competitors')[1].get('team').get('name'))
-        teamAbbreviations[0].append(game.get('competitions')[0].get('competitors')[0].get('team').get('abbreviation'))
-        teamAbbreviations[1].append(game.get('competitions')[0].get('competitors')[1].get('team').get('abbreviation'))
-
-
-    #merge arrays into a dictionary and save to json
-    gameData = []
-    for i in range(len(nameList)):
-        gameData.append({
-            "gameID": i+1,
-            # "homeTeam": nameList[i].split("@")[1], #these cause issues when the team name doesn't have @ and is VS instead
-            # "awayTeam": nameList[i].split("@")[0],
-            "fullName": nameList[i],
-            "homeScore": homeScoreList[i],
-            "awayScore": awayScoreList[i],
-            "gameStatus": gameStatusList[i],
-            "teamNames": {
-                "homeTeam": teamNames[0][i],
-                "awayTeam": teamNames[1][i]
+        games.append({
+            "id": i + 1,
+            "name": game.get("shortName"),
+            "state": status.get("state"),          # "pre", "in", "post"
+            "detail": status.get("shortDetail"),   # "Final", "7:32 - 3rd", "10/18 - 1:00 PM EDT"
+            "home": {
+                "abbr": home["team"].get("abbreviation"),
+                "name": home["team"].get("name"),
+                "score": int(home.get("score") or 0),
             },
-            "teamAbbreviations": {
-                "homeTeam": teamAbbreviations[0][i],
-                "awayTeam": teamAbbreviations[1][i]
-            }
+            "away": {
+                "abbr": away["team"].get("abbreviation"),
+                "name": away["team"].get("name"),
+                "score": int(away.get("score") or 0),
+            },
         })
-        #dumps all the current scores to json file
-        with open(f"game_data.json", "w") as f:
-            json.dump(gameData, f, indent=2)        
 
-    # for i in range(len(nameList)):
-    #     print(f"{nameList[i]}: {awayScoreList[i]} - {homeScoreList[i]}")
-    # print(nameList)
-    return gameData
+    return {
+        "anyLive": any(g["state"] == "in" for g in games),
+        "games": games,
+    }
 
-#returns your favorite team's data in a list: [team abbreviation name, win-loss record]
-#when calling this function, use the team name in lowercase (ex: "seattle" for seahawks)
-def get_favTeam_data(teamName):
-    #set url for fav teams
-    url = f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/{teamName}"
 
-    response = requests.get(url, timeout=10) #10 seconds to get response otherwise we throw error
-    response.raise_for_status
-    data = response.json()
+def get_cached_score():
+    now = time.time()
+    if _cache["data"] is None or now - _cache["time"] > CACHE_SECONDS:
+        try:
+            _cache["data"] = get_score()
+            _cache["time"] = now
+        except requests.RequestException as e:
+            print(f"ESPN fetch failed: {e}")
+            if _cache["data"] is None:
+                raise  # nothing to fall back on
+            # otherwise keep serving the last good data
+    return _cache["data"]
 
-    #dumps the whole content of api to json
-    # with open(f"{teamName}_data.json", "w") as f:
-    #     json.dump(data, f, indent=2)
 
-    teamData = []
-    teamData.append({"teamName": data.get('team').get('shortDisplayName'), "teamRecord": data.get('team').get('record').get('items')[0].get('summary')})
+@app.route("/scores")
+def scores():
+    try:
+        return jsonify(get_cached_score())
+    except requests.RequestException:
+        return jsonify({"error": "ESPN unavailable"}), 502
 
-    #dump the team data to json
-    with open(f"{teamName}_data.json", "w") as f:
-        json.dump(teamData, f, indent=2)
 
-    return teamData
-
-def main():
-    get_score()
-    # get_favTeam_data("seattle")
-    # get_favTeam_data("chicago")
-
-main()
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)

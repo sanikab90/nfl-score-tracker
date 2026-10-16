@@ -1,0 +1,212 @@
+[
+  {
+    "gameID": 1,
+    "fullName": "SEA @ DEN",
+    "homeScore": "17",
+    "awayScore": "14",
+    "gameStatus": "Final",
+    "teamNames": {
+      "homeTeam": "Broncos",
+      "awayTeam": "Seahawks"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "DEN",
+      "awayTeam": "SEA"
+    }
+  },
+  {
+    "gameID": 2,
+    "fullName": "HOU VS JAX",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Jaguars",
+      "awayTeam": "Texans"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "JAX",
+      "awayTeam": "HOU"
+    }
+  },
+  {
+    "gameID": 3,
+    "fullName": "CHI @ ATL",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Falcons",
+      "awayTeam": "Bears"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "ATL",
+      "awayTeam": "CHI"
+    }
+  },
+  {
+    "gameID": 4,
+    "fullName": "BAL @ CLE",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Browns",
+      "awayTeam": "Ravens"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "CLE",
+      "awayTeam": "BAL"
+    }
+  },
+  {
+    "gameID": 5,
+    "fullName": "TEN @ IND",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Colts",
+      "awayTeam": "Titans"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "IND",
+      "awayTeam": "TEN"
+    }
+  },
+  {
+    "gameID": 6,
+    "fullName": "NYJ @ NE",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Patriots",
+      "awayTeam": "Jets"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "NE",
+      "awayTeam": "NYJ"
+    }
+  },
+  {
+    "gameID": 7,
+    "fullName": "NO @ NYG",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Giants",
+      "awayTeam": "Saints"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "NYG",
+      "awayTeam": "NO"
+    }
+  },
+  {
+    "gameID": 8,
+    "fullName": "CAR @ PHI",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Eagles",
+      "awayTeam": "Panthers"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "PHI",
+      "awayTeam": "CAR"
+    }
+  },
+  {
+    "gameID": 9,
+    "fullName": "PIT @ TB",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Buccaneers",
+      "awayTeam": "Steelers"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "TB",
+      "awayTeam": "PIT"
+    }
+  },
+  {
+    "gameID": 10,
+    "fullName": "ARI @ LAR",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Rams",
+      "awayTeam": "Cardinals"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "LAR",
+      "awayTeam": "ARI"
+    }
+  },
+  {
+    "gameID": 11,
+    "fullName": "LAC @ KC",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Chiefs",
+      "awayTeam": "Chargers"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "KC",
+      "awayTeam": "LAC"
+    }
+  },
+  {
+    "gameID": 12,
+    "fullName": "BUF @ LV",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Raiders",
+      "awayTeam": "Bills"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "LV",
+      "awayTeam": "BUF"
+    }
+  },
+  {
+    "gameID": 13,
+    "fullName": "DAL @ GB",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "Packers",
+      "awayTeam": "Cowboys"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "GB",
+      "awayTeam": "DAL"
+    }
+  },
+  {
+    "gameID": 14,
+    "fullName": "WSH @ SF",
+    "homeScore": "0",
+    "awayScore": "0",
+    "gameStatus": "Scheduled",
+    "teamNames": {
+      "homeTeam": "49ers",
+      "awayTeam": "Commanders"
+    },
+    "teamAbbreviations": {
+      "homeTeam": "SF",
+      "awayTeam": "WSH"
+    }
+  }
+]
