@@ -167,14 +167,34 @@ void drawScores() {
 }
 
 void setup() {
-  // Initialize Backlight Hardware Pin
-  pinMode(TFT_BL_PIN, OUTPUT);
-  digitalWrite(TFT_BL_PIN, HIGH); // Turn backlight ON
+  Serial.begin(115200);           //start debug channel
+  pinMode(TFT_BL_PIN, OUTPUT);    //pin signals out
+  digitalWrite(TFT_BL_PIN, HIGH); //high = 3.3v
 
-  TFT_display.begin();
-  TFT_display.setRotation(1); // Landscape
-  TFT_display.fillScreen(WHITE);
+  TFT_display.begin();            //initalize screen
+  TFT_display.setRotation(1);     //1 = landscape
+
+  showMessage("Connecting WiFi...");
+  if (!connectWiFi()) {
+    showMessage("WiFi Failed :(");
+    return;                       //leave setup(); loop will retry
+  }
+  showMessage("Fetching Scores....");
+  if(fetchScores()) drawScores();
+  lastFetch = millis();           //start 20 second countdown from now
 }
 
 void loop() {
+  if(WiFi.status() != WL_CONNECTED) {   //wifi droped? try again
+    connectWiFi();
+    return;                             //skip the rest and check again next pass
+  }
+
+  //esapsed-time pattern: has 20 seconds passed since last fetch?
+  if (millis() - lastFetch >= FETCH_INTERVAL_MS) {
+    lastFetch = millis();
+    if (fetchScores()) drawScores();    //redraw only if new data comes in    
+  }
+
+  //button handling here for v2 when fantasy data will be added
 }
