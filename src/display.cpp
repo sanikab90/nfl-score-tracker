@@ -24,6 +24,8 @@ DIYables_ST7789_SPI  TFT_display(TFT_WIDTH, TFT_HEIGHT, TFT_CS_PIN, TFT_DC_PIN, 
 #define BLACK DIYables_TFT_SPI::colorRGB(0,0,0)
 #define GREEN DIYables_TFT_SPI::colorRGB(0,255,0)
 #define GRAY DIYables_TFT_SPI::colorRGB(150,150,150)
+#define DARKGREEN DIYables_TFT_SPI::colorRGB(0, 90, 0)
+#define DARKRED   DIYables_TFT_SPI::colorRGB(110, 0, 0)
 
 //create data model
 //copys json into a seperate structure code isn't aware of JSON at all
@@ -210,7 +212,20 @@ void drawGame(const Game& g, int slot) {
 
   bool live = strcmp(g.state, "in") == 0;
   bool done = strcmp(g.state, "post") == 0;
-  uint16_t color = live ? GREEN : (done ? GRAY : WHITE);
+  uint16_t color = live ? GREEN : WHITE;
+
+  //color finished games red and green based on who won
+  if (done && g.awayScore != g.homeScore) {
+    bool awayWon = g.awayScore > g.homeScore;
+    uint16_t leftColor = awayWon ? DARKGREEN : DARKRED;
+    uint16_t rightColor = awayWon ? DARKRED : DARKGREEN;
+
+    int mid = x + BOX_W / 2;
+
+    TFT_display.fillRoundRect(x, y, BOX_W, BOX_H, 6, leftColor);          //whole
+    TFT_display.fillRoundRect(mid, y, BOX_W / 2, BOX_H, 6, rightColor);   //right half
+    TFT_display.fillRect(mid, y, 8, BOX_H, rightColor);                   //sauare off the seam
+  }
 
   TFT_display.drawRoundRect(x, y, BOX_W, BOX_H, 6, color); //box outline
 
