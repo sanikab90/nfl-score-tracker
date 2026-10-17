@@ -210,38 +210,85 @@ void drawGame(const Game& g, int slot) {
 
   bool live = strcmp(g.state, "in") == 0;
   bool done = strcmp(g.state, "post") == 0;
+  uint16_t color = live ? GREEN : (done ? GRAY : WHITE);
+
+  TFT_display.drawRoundRect(x, y, BOX_W, BOX_H, 6, color); //box outline
+
+  //awawy team logo then the scoer
+  const uint16_t* awayLogo = logoFor(g.away);
+
+  if (awayLogo){
+    TFT_display.drawRGBBitmap(x + 8, y+4, awayLogo, LOGO_W, LOGO_H);
+  } else {
+    TFT_display.setTextSize(1);
+    TFT_display.setTextColor(color);
+    TFT_display.setCursor(x + 8, y + 12);
+    TFT_display.print(g.away);
+  }
+  TFT_display.setTextSize(2);
+  TFT_display.setTextColor(color);
+  TFT_display.setCursor(x + 38, y + 8);
+  TFT_display.print(g.awayScore);
+
+  //now do home team
+  const uint16_t* homeLogo = logoFor(g.home);
+
+  if (homeLogo){
+    TFT_display.drawRGBBitmap(x + 84, y + 4, homeLogo, LOGO_W, LOGO_H);
+  } else {
+    TFT_display.setTextSize(1);
+    TFT_display.setTextColor(color);
+    TFT_display.setCursor(x + 84, y+12);
+    TFT_display.print(g.home);
+  }
+  TFT_display.setTextSize(2);
+  TFT_display.setTextColor(color);
+  TFT_display.setCursor(x+114, y+8);
+  TFT_display.print(g.homeScore);
+
+  //status line under logos
+  TFT_display.setTextSize(1);
+  TFT_display.setCursor(x+8, y+36);
+  TFT_display.print(g.detail);
+  
 }
 
 //DRAWs score from data we just collected above
 //gets data from games[]
 void drawScores() {
-  TFT_display.fillScreen(BLACK);
+  buildView();
+  TFT_display.fillScreen(BLACK);    //decide what to show first
 
-  //header
+  //header text depends on what view we're in 
+  const char* title;
+  if (anyLive) title = showAlternate ? "ALL GAMES" : "LIVE NOW";
+  else        title = showAlternate ? "MY TEAMS" : "ALL SCORES";
+
   TFT_display.setTextSize(2);
   TFT_display.setTextColor(WHITE);
   TFT_display.setCursor(4,4);
-  TFT_display.print(anyLive ? "LIVE SCORES" : "CURRENT STANDING");
+  TFT_display.print(title);
 
-  //draw at most MAX_ROWS games, or fewer depending on count
-  int rows = gameCount < MAX_ROWS ? gameCount : MAX_ROWS;
-  for (int i = 0; i < rows; i++) {
-    const Game& g = games[i];       //"const &" = read-only values of game
-    int y = HEADER_H + i * ROW_H;   // each row sits one ROW_H lower than the last
-  
-    bool live = strcmp(g.state, "in") == 0;
-    bool done = strcmp(g.state, "post") == 0;
+  if (viewCount = 0) {
+    TFT_display.setCursor(10, 110);     //eg bears and seahawks both on bye
+    TFT_display.print("Bears and Seahawks on Bye");
+    return;
+  }
 
-    //color will tell you status of the game
-    TFT_display.setTextSize(2);
-    TFT_display.setTextColor(live ? GREEN : (done ? GRAY : WHITE));
-    TFT_display.setCursor(4, y + 4);
-    TFT_display.printf("%-3s %2d  %-3s %2d", g.away, g.awayScore, g.home, g.homeScore);
+  //14 games / 8 per page = 2 pages
+  int pages = (viewCount + PER_PAGE - 1) / PER_PAGE;
+  if (currentPage >= pages) currentPage = 0;    //wrap around or recover if list shrank
 
-    //clock/quarter
+  int first = currentPage * PER_PAGE;
+
+  for (int s = 0; s < PER_PAGE && first + s < viewCount; s++) {
+    drawGame(games[view[first + s]], s);
+  }
+
+  if (pages > 1) {                          //page indicator top right
     TFT_display.setTextSize(1);
-    TFT_display.setCursor(180, y + 8);
-    TFT_display.print(g.detail);
+    TFT_display.setCursor(290, 8);
+    TFT_display.printf("%d/%d", currentPage+1, pages);
   }
 }
 
@@ -274,9 +321,20 @@ void loop() {
 
   //esapsed-time pattern: has 20 seconds passed since last fetch?
   if (millis() - lastFetch >= FETCH_INTERVAL_MS) {
+    Serial.println("fetching again");
     lastFetch = millis();
-    if (fetchScores()) drawScores();    //redraw only if new data comes in
-    Serial.println(gameCount);    
+    if (fetchScores()){    //redraw only if new data comes in
+      Serial.println("drawing new scores");
+      drawScores();
+    }
+    Serial.println(gameCount);
+  }
+
+  //workaround pre button: auto rotate page if more than one page
+  if (viewCount > PER_PAGE && millis() - lastPageFlip >= PAGE_INTERVAL_MS) {
+    lastPageFlip = millis();
+    currentPage ++;       //drawScores() sets this back to 0
+    drawScores();
   }
 
   //button handling here for v2 when fantasy data will be added
