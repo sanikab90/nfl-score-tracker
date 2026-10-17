@@ -52,6 +52,46 @@ String lastPayload;     //the last json text, kept to spot changes and make chan
 const unsigned long FETCH_INTERVAL_MS = 20000; //20 seconds
 unsigned long lastFetch = 0;        //last time data was fetched
 
+//make layout pretty
+#define PER_PAGE  8   //2 columns x 4 rows
+#define BOX_W     152 
+#define BOX_H     50
+#define BOX_GAP_X 8   //space between cols
+#define BOX_GAP_Y 4   //space between rows
+#define LOGO_W    AZ_WIDTH    //all logos use same height and width so setting this as global for now
+#define LOGO_H    AZ_HEIGHT
+
+int view[MAX_GAMES];    //indexes into games[] that we want on screen
+int viewCount = 0;      //how many entries of view[] are filled
+int currentPage = 0;
+bool showAlternate = false;   //the button will flip this
+
+const unsigned long PAGE_INTERVAL_MS = 6000;
+unsigned long lastPageFlip = 0;
+
+
+//logo lookup
+struct LogoEntry { const char* abbr; const uint16_t* data; };
+const LogoEntry LOGOS[] = {
+  {"ARI", AZ}, {"AZ", AZ}, {"ATL", ATL}, {"BAL", BAL}, {"BUF", BUF},
+  {"CAR", CAR}, {"CHI", CHI}, {"CIN", CIN}, {"CLE", CLE}, {"DAL", DAL},
+  {"DEN", DEN}, {"DET", DET}, {"GB", GB}, {"HOU", HOU}, {"IND", IND},
+  {"JAX", JAX}, {"KC", KC}, {"LV", LV}, {"LAC", LAC}, {"LAR", LAR},
+  {"MIA", MIA}, {"MIN", MIN}, {"NE", NE}, {"NO", NO}, {"NYG", NYG},
+  {"NYJ", NYJ}, {"PHI", PHI}, {"PIT", PIT}, {"SEA", SEA}, {"SF", SF},
+  {"TB", TB}, {"TEN", TEN}, {"WSH", WAS}, {"WAS", WAS}
+};
+
+const int LOGO_COUNT = sizeof(LOGOS) / sizeof(LOGOS[0]);   //total bytes / bytes per entry = entry count
+
+//returns the bitmap for abbr or nullptr if we don't have one
+const uint16_t* logoFor(const char* abbr) {
+  for (int i = 0; i < LOGO_COUNT; i++) {
+    if (strcmp(LOGOS[i].abbr, abbr) == 0) return LOGOS[i].data;
+  }
+  return nullptr;
+}
+
 //=================================
 //helper functions
 //=================================
@@ -136,6 +176,40 @@ bool fetchScores() {
     strlcpy(out.detail, g["detail"] | "", sizeof(out.detail));
   }
   return true;
+}
+
+bool isFavorite(const Game& g) {
+  return strcmp(g.home, "CHI") == 0 || strcmp(g.away, "CHI") == 0 ||
+         strcmp(g.home, "SEA") == 0 || strcmp(g.away, "SEA") == 0;
+}
+
+//decieds which games to show based on anyLive and showAlternate
+//fills view[] with indexes into games[]
+void buildView() {
+  viewCount = 0;
+  for (int i = 0; i < gameCount; i++) {
+    const Game& g = games[i];
+    bool live = strcmp(g.state, "in") == 0;
+
+    bool include;
+    if (anyLive) {
+      include = showAlternate ? true : live;       // live: default = live only, alt = all
+    } else {
+      include = showAlternate ? isFavorite(g) : true;  // none live: default = all, alt = favorites
+    }
+    if (include) view[viewCount++] = i;
+  }
+}
+
+//draws one game in box number [slot] (0-7) on the current page
+void drawGame(const Game& g, int slot) {
+  int col = slot % 2;
+  int row = slot / 2;
+  int x = 4 + col * (BOX_W + BOX_GAP_X);
+  int y = HEADER_H + row * (BOX_H + BOX_GAP_Y);
+
+  bool live = strcmp(g.state, "in") == 0;
+  bool done = strcmp(g.state, "post") == 0;
 }
 
 //DRAWs score from data we just collected above
