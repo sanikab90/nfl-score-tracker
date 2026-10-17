@@ -74,6 +74,7 @@ bool connectWiFi() {
 
   //wait until connected but give up after 15 seconds in case no connection
   while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) {
+    Serial.println("couldn't connect - trying again...");
     delay(250);     //check 4 times a second
   }
 
@@ -92,6 +93,7 @@ bool fetchScores() {
   HTTPClient http;
   http.setTimeout(8000);    //give up on stalled request after 8 seconds
   http.begin(API_URL);      //address to talk to
+  Serial.printf("this is the api url: %s\n", API_URL);
   
   int code = http.GET();
 
@@ -100,6 +102,8 @@ bool fetchScores() {
     http.end();
     return false;
   }
+
+  Serial.printf("yippee got a %d response\n", code);
 
   String payload = http.getString(); //response body
   http.end();
@@ -117,6 +121,7 @@ bool fetchScores() {
 
   anyLive = doc["anyLive"] | false;
 
+  gameCount = 0;
   for (JsonObject g : doc["games"].as<JsonArray>()) {
     if (gameCount >= MAX_GAMES) break;    //don't overflow array
     Game& out = games[gameCount++];       //& means that we're not working on a copy of the data
@@ -148,7 +153,7 @@ void drawScores() {
   int rows = gameCount < MAX_ROWS ? gameCount : MAX_ROWS;
   for (int i = 0; i < rows; i++) {
     const Game& g = games[i];       //"const &" = read-only values of game
-    int y = HEADER_H + i + ROW_H;   // each row sits one ROW_H lower than the last
+    int y = HEADER_H + i * ROW_H;   // each row sits one ROW_H lower than the last
   
     bool live = strcmp(g.state, "in") == 0;
     bool done = strcmp(g.state, "post") == 0;
@@ -180,7 +185,10 @@ void setup() {
     return;                       //leave setup(); loop will retry
   }
   showMessage("Fetching Scores....");
-  if(fetchScores()) drawScores();
+  if(fetchScores()){
+    Serial.println("fetching scores..");
+    drawScores();
+  }
   lastFetch = millis();           //start 20 second countdown from now
 }
 
@@ -193,7 +201,8 @@ void loop() {
   //esapsed-time pattern: has 20 seconds passed since last fetch?
   if (millis() - lastFetch >= FETCH_INTERVAL_MS) {
     lastFetch = millis();
-    if (fetchScores()) drawScores();    //redraw only if new data comes in    
+    if (fetchScores()) drawScores();    //redraw only if new data comes in
+    Serial.println(gameCount);    
   }
 
   //button handling here for v2 when fantasy data will be added

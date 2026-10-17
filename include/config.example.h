@@ -8,3 +8,5 @@
 
 #define WIFI_SSID "ssid"
 #define WIFI_PASSWORD "password"
+
+#define API_URL "http://10.0.0.230:8000/scores"
