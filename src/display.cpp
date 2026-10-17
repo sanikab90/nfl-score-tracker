@@ -214,7 +214,8 @@ void drawGame(const Game& g, int slot) {
 
   TFT_display.drawRoundRect(x, y, BOX_W, BOX_H, 6, color); //box outline
 
-  //awawy team logo then the scoer
+  //awawy team logo then the score
+  //TODO: i want the winning team displayed in more color/have a boarder around it
   const uint16_t* awayLogo = logoFor(g.away);
 
   if (awayLogo){
@@ -253,10 +254,30 @@ void drawGame(const Game& g, int slot) {
   
 }
 
+//debug dumping
+void debugDump() {
+  Serial.printf("--- gameCount=%d viewCount=%d anyLive=%d showAlternate=%d page=%d\n",
+                gameCount, viewCount, anyLive, showAlternate, currentPage);
+
+  Serial.println("games[]:");
+  for (int i = 0; i < gameCount; i++) {
+    Serial.printf("  [%d] %s %d @ %s %d  state=%s  detail=%s\n",
+                  i, games[i].away, games[i].awayScore,
+                  games[i].home, games[i].homeScore,
+                  games[i].state, games[i].detail);
+  }
+
+  Serial.print("view[]: ");
+  for (int i = 0; i < viewCount; i++) {
+    Serial.printf("%d ", view[i]);
+  }
+  Serial.println();
+}
 //DRAWs score from data we just collected above
 //gets data from games[]
 void drawScores() {
   buildView();
+  // debugDump();
   TFT_display.fillScreen(BLACK);    //decide what to show first
 
   //header text depends on what view we're in 
@@ -269,7 +290,7 @@ void drawScores() {
   TFT_display.setCursor(4,4);
   TFT_display.print(title);
 
-  if (viewCount = 0) {
+  if (viewCount == 0) {
     TFT_display.setCursor(10, 110);     //eg bears and seahawks both on bye
     TFT_display.print("Bears and Seahawks on Bye");
     return;
@@ -280,8 +301,9 @@ void drawScores() {
   if (currentPage >= pages) currentPage = 0;    //wrap around or recover if list shrank
 
   int first = currentPage * PER_PAGE;
-
+  Serial.printf("int first = %d\n", first);
   for (int s = 0; s < PER_PAGE && first + s < viewCount; s++) {
+    Serial.println("calling drawGame()");
     drawGame(games[view[first + s]], s);
   }
 

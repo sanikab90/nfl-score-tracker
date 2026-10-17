@@ -1,13 +1,26 @@
 import time
 import requests
 from flask import Flask, jsonify
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
+PACIFIC = ZoneInfo("America/Los_Angeles")
 SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
 CACHE_SECONDS = 15
 
 app = Flask(__name__)
 _cache = {"time": 0.0, "data": None}
 
+def game_detail(game, status):
+    """Status text for the screen. Display game time in pst"""
+    if status.get("state") != "pre":
+        return status.get("shortDetail") #if game is live/ended no timezone to display
+
+    utc_time = datetime.fromisoformat(game["date"].replace("Z", "+00:00"))
+    local = utc_time.astimezone(PACIFIC)
+
+    hour_min = local.strftime("%I:%M %p").lstrip("0")   # "01:00 PM" -> "1:00 PM"
+    return f"{local.month}/{local.day} - {hour_min} {local.strftime('%Z')}"
 
 def get_score():
     """Fetch the scoreboard from ESPN and return a small, ESP32-friendly dict."""
@@ -26,7 +39,7 @@ def get_score():
             "id": i + 1,
             "name": game.get("shortName"),
             "state": status.get("state"),          # "pre", "in", "post"
-            "detail": status.get("shortDetail"),   # "Final", "7:32 - 3rd", "10/18 - 1:00 PM EDT"
+            "detail": game_detail(game, status),   # "Final", "7:32 - 3rd", "10/18 - 1:00 PM EDT"
             "home": {
                 "abbr": home["team"].get("abbreviation"),
                 "name": home["team"].get("name"),
