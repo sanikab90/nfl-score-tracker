@@ -71,6 +71,10 @@ bool showAlternate = false;   //the button will flip this
 
 const unsigned long PAGE_INTERVAL_MS = 6000;
 unsigned long lastPageFlip = 0;
+const unsigned long DEBOUNCE_MS = 50;
+int lastRawReading = HIGH;    //what the pin read on the previous pass
+int stableState = HIGH;       //the last confirmed debounce state
+unsigned long lastChangeTime = 0;
 
 
 //logo lookup
@@ -117,7 +121,7 @@ bool connectWiFi() {
 
   //wait until connected but give up after 15 seconds in case no connection
   while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) {
-    Serial.println("couldn't connect - trying again...");
+    // Serial.println("couldn't connect - trying again...");
     delay(250);     //check 4 times a second
   }
 
@@ -136,7 +140,7 @@ bool fetchScores() {
   HTTPClient http;
   http.setTimeout(8000);    //give up on stalled request after 8 seconds
   http.begin(API_URL);      //address to talk to
-  Serial.printf("this is the api url: %s\n", API_URL);
+  // Serial.printf("this is the api url: %s\n", API_URL);
   
   int code = http.GET();
 
@@ -146,7 +150,7 @@ bool fetchScores() {
     return false;
   }
 
-  Serial.printf("yippee got a %d response\n", code);
+  // Serial.printf("yippee got a %d response\n", code);
 
   String payload = http.getString(); //response body
   http.end();
@@ -316,9 +320,9 @@ void drawScores() {
   if (currentPage >= pages) currentPage = 0;    //wrap around or recover if list shrank
 
   int first = currentPage * PER_PAGE;
-  Serial.printf("int first = %d\n", first);
+  // Serial.printf("int first = %d\n", first);
   for (int s = 0; s < PER_PAGE && first + s < viewCount; s++) {
-    Serial.println("calling drawGame()");
+    // Serial.println("calling drawGame()");
     drawGame(games[view[first + s]], s);
   }
 
@@ -326,6 +330,30 @@ void drawScores() {
     TFT_display.setTextSize(1);
     TFT_display.setCursor(290, 8);
     TFT_display.printf("%d/%d", currentPage+1, pages);
+  }
+}
+
+//call after every pass of loop: flips showAlternate once per button press
+void checkButton() {
+  int reading = digitalRead(BUTTON_PRESS);
+
+  //pin changed ince last pass: restart debounce stopwatch
+  if (reading != lastRawReading) {
+    lastChangeTime = millis();
+    lastRawReading = reading;
+  }
+
+  //reading has been steady for DEBOUNCE_MS and differes from the confimed state
+  if ((millis() - lastChangeTime) > DEBOUNCE_MS && reading != stableState) {
+    stableState = reading;
+
+    if (stableState == LOW) {                                 //HIGH -> LOW = moment of pressing
+      showAlternate = !showAlternate;                         //flip flag
+      currentPage = 0;                                        //start the new view on page 1
+      lastPageFlip = millis();                                //give the new page a full interval
+      Serial.printf("showAlternate = %d\n", showAlternate);
+      if (gameCount > 0) drawScores();                        //only draw if we have data
+    }
   }
 }
 
@@ -345,27 +373,29 @@ void setup() {
   }
   showMessage("Fetching Scores....");
   if(fetchScores()){
-    Serial.println("fetching scores..");
+    // Serial.println("fetching scores..");
     drawScores();
   }
   lastFetch = millis();           //start 20 second countdown from now
 }
 
 void loop() {
+  checkButton();
+
   if(WiFi.status() != WL_CONNECTED) {   //wifi droped? try again
     connectWiFi();
     return;                             //skip the rest and check again next pass
   }
 
-  //esapsed-time pattern: has 20 seconds passed since last fetch?
+  //elapsed-time pattern: has 20 seconds passed since last fetch?
   if (millis() - lastFetch >= FETCH_INTERVAL_MS) {
-    Serial.println("fetching again");
+    // Serial.println("fetching again");
     lastFetch = millis();
     if (fetchScores()){    //redraw only if new data comes in
-      Serial.println("drawing new scores");
+      // Serial.println("drawing new scores");
       drawScores();
     }
-    Serial.println(gameCount);
+    // Serial.println(gameCount);
   }
 
   //workaround pre button: auto rotate page if more than one page
@@ -374,6 +404,4 @@ void loop() {
     currentPage ++;       //drawScores() sets this back to 0
     drawScores();
   }
-
-  //button handling here for v2 when fantasy data will be added
 }
