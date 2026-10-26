@@ -14,6 +14,7 @@
 #define TFT_DC_PIN   22
 #define TFT_RST_PIN  4
 #define TFT_BL_PIN   21  // Added GPIO pin 21 for Backlight Control
+#define BUTTON_PRESS 27 //button
 #define TFT_WIDTH   240
 #define TFT_HEIGHT  320
 // MOSI and SCK use default hardware SPI pins
@@ -230,7 +231,6 @@ void drawGame(const Game& g, int slot) {
   TFT_display.drawRoundRect(x, y, BOX_W, BOX_H, 6, color); //box outline
 
   //awawy team logo then the score
-  //TODO: i want the winning team displayed in more color/have a boarder around it
   const uint16_t* awayLogo = logoFor(g.away);
 
   if (awayLogo){
@@ -333,6 +333,7 @@ void setup() {
   Serial.begin(115200);           //start debug channel
   pinMode(TFT_BL_PIN, OUTPUT);    //pin signals out
   digitalWrite(TFT_BL_PIN, HIGH); //high = 3.3v
+  pinMode(BUTTON_PRESS, INPUT_PULLUP);  //set up button
 
   TFT_display.begin();            //initalize screen
   TFT_display.setRotation(1);     //1 = landscape
